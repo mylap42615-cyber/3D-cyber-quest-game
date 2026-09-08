@@ -1,0 +1,2667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>CYBER QUEST // Become a Cyber Guardian</title>
+
+  <!-- Local Three.js with fallback to CDN -->
+  <script src="three.min.js"></script>
+  <script>
+    if (typeof THREE === 'undefined') {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
+    }
+  </script>
+
+  <!-- Futuristic Cyberpunk Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      /* Bento Grid Palette */
+      --bento-bg: #1C1B1F;
+      --bento-card: #2B2930;
+      --bento-card-active: #332D41;
+      --bento-border: #49454F;
+      --bento-border-subtle: rgba(73, 69, 79, 0.6);
+      --bento-hero: #D0BCFF;
+      --bento-hero-text: #381E72;
+      --bento-purple-mid: #4F378B;
+      --bento-purple-deep: #21005D;
+      --bento-pill-bg: #E8DEF8;
+      --bento-pill-text: #1D192B;
+      --bento-gold: #FFD700;
+      --bento-text-main: #E6E1E5;
+      --bento-text-sub: #CAC4D0;
+      --bento-success: #4ADE80;
+      --bento-error: #F87171;
+
+      /* Color Mappings for Components */
+      --neon-cyan: #D0BCFF;
+      --neon-blue: #4F378B;
+      --neon-purple: #D0BCFF;
+      --neon-green: #4ADE80;
+      --neon-amber: #FFD700;
+      --neon-red: #F87171;
+      --dark-bg: #1C1B1F;
+      --panel-bg: rgba(43, 41, 48, 0.95);
+      --panel-border: #49454F;
+
+      --font-title: 'Orbitron', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: 'Share Tech Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bento-bg);
+      font-family: var(--font-body);
+      color: var(--bento-text-main);
+      position: fixed;
+      touch-action: none;
+    }
+
+    #webgl-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      display: block;
+    }
+
+    /* Ambient Subtle Grid Scanline Effect */
+    .scanlines {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 15;
+      background: linear-gradient(
+        rgba(28, 27, 31, 0) 50%, 
+        rgba(0, 0, 0, 0.18) 50%
+      );
+      background-size: 100% 4px;
+      opacity: 0.45;
+    }
+
+    /* ============================================================
+       STARTUP CINEMATIC & INTRO (Bento Grid Modular Layout)
+       ============================================================ */
+    #startup-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, #2B2930 0%, #1C1B1F 100%);
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: env(safe-area-inset-top, 10px) env(safe-area-inset-right, 24px) env(safe-area-inset-bottom, 10px) env(safe-area-inset-left, 24px);
+      transition: opacity 0.6s ease;
+    }
+
+    .startup-container {
+      width: 100%;
+      max-width: 840px;
+      display: flex;
+      flex-direction: row;
+      gap: 12px;
+      background: var(--bento-bg);
+      border: 1px solid var(--bento-border);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      border-radius: 28px;
+      padding: 12px;
+      overflow: hidden;
+      max-height: 90vh;
+    }
+
+    .startup-terminal {
+      flex: 1.1;
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      background: var(--bento-card);
+      border: 1px solid var(--bento-border);
+      border-radius: 24px;
+      font-family: var(--font-mono);
+    }
+
+    .terminal-header {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--bento-border);
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      color: var(--bento-hero);
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      font-weight: bold;
+    }
+
+    .terminal-log {
+      flex: 1;
+      min-height: 120px;
+      max-height: 160px;
+      overflow-y: auto;
+      font-size: 0.85rem;
+      color: var(--bento-text-sub);
+      line-height: 1.5;
+    }
+
+    .log-entry { margin-bottom: 4px; }
+    .log-success { color: var(--bento-success); }
+
+    .startup-branding {
+      flex: 1;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      background: linear-gradient(135deg, var(--bento-purple-deep) 0%, var(--bento-purple-mid) 100%);
+      border: 1px solid var(--bento-border);
+      border-radius: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .startup-branding::before {
+      content: '';
+      position: absolute;
+      top: -24px;
+      right: -24px;
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      background: var(--bento-purple-mid);
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    .title-cyber {
+      font-family: var(--font-title);
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: #FFFFFF;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      position: relative;
+      z-index: 2;
+    }
+
+    .title-sub {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--bento-hero);
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      font-weight: bold;
+      position: relative;
+      z-index: 2;
+    }
+
+    .btn-cyber {
+      background: var(--bento-hero);
+      color: var(--bento-hero-text);
+      border: none;
+      font-family: var(--font-title);
+      font-size: 0.9rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      padding: 12px 28px;
+      cursor: pointer;
+      border-radius: 9999px;
+      transition: all 0.15s ease;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .btn-cyber:active {
+      transform: scale(0.95);
+      background: #FFFFFF;
+      color: var(--bento-purple-deep);
+    }
+
+    /* ============================================================
+       HEADS-UP DISPLAY (HUD) - Bento Grid Pill & Capsule Architecture
+       ============================================================ */
+    #hud {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 20;
+      display: none;
+    }
+
+    .hud-top-bar {
+      position: absolute;
+      top: env(safe-area-inset-top, 12px);
+      left: env(safe-area-inset-left, 16px);
+      right: env(safe-area-inset-right, 16px);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .hud-card {
+      background: var(--bento-card);
+      border: 1px solid var(--bento-border);
+      backdrop-filter: blur(12px);
+      padding: 6px 14px;
+      border-radius: 24px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+      pointer-events: auto;
+    }
+
+    .player-stats-compact {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--bento-purple-mid);
+      border: 2px solid var(--bento-hero);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1rem;
+      color: #FFFFFF;
+      font-weight: bold;
+    }
+
+    .stats-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .guardian-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .guardian-title {
+      font-family: var(--font-title);
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: 0.5px;
+    }
+
+    .guardian-level {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--bento-hero);
+      font-weight: bold;
+    }
+
+    .xp-bar-container {
+      width: 120px;
+      height: 6px;
+      background: var(--bento-bg);
+      border-radius: 9999px;
+      overflow: hidden;
+      border: 1px solid var(--bento-border);
+    }
+
+    .xp-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: var(--bento-hero);
+      border-radius: 9999px;
+      transition: width 0.4s ease;
+    }
+
+    .hearts-row {
+      display: flex;
+      gap: 3px;
+    }
+
+    .heart {
+      color: var(--bento-error);
+      font-size: 0.82rem;
+      transition: opacity 0.3s;
+    }
+
+    .heart.lost {
+      opacity: 0.25;
+      filter: grayscale(1);
+    }
+
+    .hud-quick-buttons {
+      display: flex;
+      gap: 8px;
+      pointer-events: auto;
+    }
+
+    .hud-icon-btn {
+      background: var(--bento-card);
+      border: 1px solid var(--bento-border);
+      color: var(--bento-text-main);
+      padding: 7px 14px;
+      font-family: var(--font-title);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      border-radius: 9999px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: all 0.15s;
+    }
+
+    .hud-icon-btn:active {
+      background: var(--bento-card-active);
+      border-color: var(--bento-hero);
+      color: var(--bento-hero);
+      transform: scale(0.95);
+    }
+
+    /* Minimal Bento Reticle */
+    .crosshair {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 18px;
+      height: 18px;
+      pointer-events: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0.65;
+    }
+
+    .crosshair::before {
+      content: '';
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--bento-hero);
+      border-radius: 50%;
+    }
+
+    .crosshair-ring {
+      width: 100%;
+      height: 100%;
+      border: 1px dashed var(--bento-hero);
+      border-radius: 50%;
+      opacity: 0.6;
+      animation: spin 14s linear infinite;
+    }
+
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    /* Bottom Objective Bento Pill */
+    .hud-bottom-bar {
+      position: absolute;
+      bottom: env(safe-area-inset-bottom, 12px);
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+
+    .objective-pill {
+      background: var(--bento-card);
+      border: 1px solid var(--bento-border);
+      backdrop-filter: blur(12px);
+      padding: 7px 20px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-body);
+      font-size: 0.76rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: var(--bento-text-main);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+      white-space: nowrap;
+    }
+
+    .objective-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--bento-gold);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--bento-gold);
+      animation: pulseDot 1s infinite alternate;
+    }
+
+    @keyframes pulseDot { 0% { opacity: 0.5; } 100% { opacity: 1; } }
+
+    /* ============================================================
+       MOBILE TOUCH CONTROLS (Bento Styled Controls)
+       ============================================================ */
+    #mobile-touch-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: auto;
+    }
+
+    /* Left Joystick Zone */
+    #joystick-touch-zone {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 45%;
+      height: 75%;
+      touch-action: none;
+    }
+
+    #joystick-base {
+      position: absolute;
+      bottom: 25px;
+      left: calc(env(safe-area-inset-left, 16px) + 25px);
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: var(--bento-card);
+      border: 2px solid var(--bento-border);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      pointer-events: none;
+      transition: border-color 0.2s;
+    }
+
+    #joystick-base.active {
+      border-color: var(--bento-hero);
+      background: var(--bento-card-active);
+    }
+
+    #joystick-knob {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--bento-hero) 0%, var(--bento-purple-mid) 100%);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+      position: absolute;
+      top: 34px;
+      left: 34px;
+      pointer-events: none;
+      transition: transform 0.05s ease-out;
+    }
+
+    /* Right Touch Camera Pan Zone */
+    #camera-touch-zone {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 55%;
+      height: 100%;
+      touch-action: none;
+    }
+
+    /* Right Hand Action Buttons */
+    #mobile-action-buttons {
+      position: absolute;
+      bottom: env(safe-area-inset-bottom, 18px);
+      right: env(safe-area-inset-right, 20px);
+      display: flex;
+      align-items: flex-end;
+      gap: 14px;
+      pointer-events: auto;
+      z-index: 25;
+    }
+
+    /* Sprint Toggle Button */
+    .mobile-sprint-btn {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--bento-card);
+      border: 1.5px solid var(--bento-border);
+      color: var(--bento-text-sub);
+      font-family: var(--font-title);
+      font-size: 0.7rem;
+      font-weight: bold;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .mobile-sprint-btn.active {
+      background: var(--bento-purple-mid);
+      border-color: var(--bento-hero);
+      color: #FFFFFF;
+      transform: scale(0.96);
+    }
+
+    /* Primary Terminal Interact Button */
+    .mobile-interact-btn {
+      min-width: 140px;
+      height: 56px;
+      padding: 0 20px;
+      border-radius: 28px;
+      background: var(--bento-card);
+      border: 1.5px solid var(--bento-border);
+      color: var(--bento-text-sub);
+      font-family: var(--font-title);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+      transition: all 0.2s;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .mobile-interact-btn.ready {
+      opacity: 1;
+      pointer-events: auto;
+      border-color: var(--bento-hero);
+      background: var(--bento-hero);
+      color: var(--bento-hero-text);
+      font-weight: 800;
+      box-shadow: 0 4px 24px rgba(208, 188, 255, 0.45);
+      animation: pulseInteract 1.2s infinite alternate;
+    }
+
+    @keyframes pulseInteract {
+      0% { transform: scale(0.98); }
+      100% { transform: scale(1.03); }
+    }
+
+    /* ============================================================
+       HOLOGRAPHIC MISSION MODALS (Bento Grid 2-Column Responsive)
+       ============================================================ */
+    .hologram-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(28, 27, 31, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 90;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: env(safe-area-inset-top, 8px) env(safe-area-inset-right, 16px) env(safe-area-inset-bottom, 8px) env(safe-area-inset-left, 16px);
+    }
+
+    .holo-window {
+      background: var(--bento-bg);
+      border: 1px solid var(--bento-border);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+      border-radius: 28px;
+      width: 100%;
+      max-width: 900px;
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      animation: holoOpen 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes holoOpen {
+      0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .holo-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--bento-border);
+      background: var(--bento-card);
+      border-radius: 28px 28px 0 0;
+    }
+
+    .holo-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .holo-tag {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      background: var(--bento-purple-mid);
+      color: var(--bento-hero);
+      padding: 3px 10px;
+      border-radius: 9999px;
+      border: 1px solid var(--bento-hero);
+      font-weight: bold;
+    }
+
+    .holo-title {
+      font-family: var(--font-title);
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: 0.5px;
+    }
+
+    .holo-close-btn {
+      background: var(--bento-card);
+      border: 1px solid var(--bento-border);
+      color: var(--bento-text-sub);
+      font-size: 1.3rem;
+      cursor: pointer;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 50%;
+      transition: all 0.15s;
+    }
+
+    .holo-close-btn:active {
+      color: var(--bento-error);
+      background: var(--bento-card-active);
+      transform: scale(0.95);
+    }
+
+    /* Modal Landscape 2-Column Split (Bento Compartments) */
+    .holo-body {
+      padding: 16px 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: row;
+      gap: 14px;
+      flex: 1;
+    }
+
+    .modal-col-left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .modal-col-right {
+      flex: 1.3;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .mission-desc-box {
+      background: var(--bento-card);
+      border: 1px solid var(--bento-border);
+      border-left: 4px solid var(--bento-hero);
+      padding: 12px 16px;
+      font-size: 0.88rem;
+      color: var(--bento-text-main);
+      line-height: 1.45;
+      border-radius: 18px;
+    }
+
+    /* Question & Terminal Card */
+    .terminal-card {
+      background: var(--bento-card);
+      border: 1px solid var(--bento-border);
+      border-radius: 20px;
+      padding: 14px 16px;
+    }
+
+    .question-prompt-text {
+      font-size: 0.92rem;
+      line-height: 1.5;
+      color: #FFFFFF;
+      white-space: pre-line;
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+
+    .interactive-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .option-btn {
+      background: var(--bento-card);
+      border: 1px solid var(--bento-border);
+      border-radius: 16px;
+      padding: 11px 16px;
+      color: var(--bento-text-main);
+      text-align: left;
+      font-family: var(--font-body);
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.15s;
+    }
+
+    .option-btn:active, .option-btn.selected {
+      background: var(--bento-card-active);
+      border-color: var(--bento-hero);
+      transform: scale(0.99);
+    }
+
+    .option-btn.selected-correct {
+      background: rgba(74, 222, 128, 0.2) !important;
+      border-color: var(--bento-success) !important;
+      color: #FFFFFF;
+      box-shadow: 0 0 16px rgba(74, 222, 128, 0.3);
+    }
+
+    .option-btn.selected-wrong {
+      background: rgba(248, 113, 113, 0.2) !important;
+      border-color: var(--bento-error) !important;
+      color: #FFFFFF;
+      box-shadow: 0 0 16px rgba(248, 113, 113, 0.3);
+    }
+
+    /* Nexora AI Advisor Box (Bento Hero Tile) */
+    .nexora-assistant-card {
+      display: flex;
+      gap: 12px;
+      background: linear-gradient(135deg, var(--bento-purple-deep) 0%, #381E72 100%);
+      border: 1px solid var(--bento-purple-mid);
+      padding: 12px 14px;
+      border-radius: 20px;
+      align-items: flex-start;
+      color: var(--bento-text-main);
+    }
+
+    .nexora-avatar {
+      font-size: 1.4rem;
+      line-height: 1;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bento-purple-mid);
+      border: 1px solid var(--bento-hero);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .nexora-content {
+      font-size: 0.84rem;
+      line-height: 1.4;
+      color: #FFFFFF;
+      flex: 1;
+    }
+
+    .nexora-name {
+      font-family: var(--font-title);
+      font-size: 0.72rem;
+      color: var(--bento-hero);
+      letter-spacing: 1.2px;
+      font-weight: bold;
+      margin-bottom: 2px;
+    }
+
+    .hint-trigger-btn {
+      background: var(--bento-card);
+      border: 1px solid var(--bento-border);
+      color: var(--bento-hero);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 5px 12px;
+      border-radius: 9999px;
+      cursor: pointer;
+      margin-top: 6px;
+      display: inline-block;
+      transition: all 0.15s;
+    }
+
+    .hint-trigger-btn:active {
+      background: var(--bento-purple-mid);
+      color: #FFFFFF;
+      transform: scale(0.96);
+    }
+
+    .holo-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      border-top: 1px solid var(--bento-border);
+      background: var(--bento-card);
+      border-radius: 0 0 28px 28px;
+    }
+
+    /* Privacy Vault Layout */
+    .privacy-vault-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    .vault-bucket {
+      background: var(--bento-bg);
+      border: 2px dashed var(--bento-border);
+      border-radius: 18px;
+      padding: 10px;
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .vault-bucket.vault-public { border-color: var(--bento-hero); }
+    .vault-bucket.vault-private { border-color: var(--bento-error); }
+
+    .vault-bucket-title {
+      font-family: var(--font-title);
+      font-size: 0.74rem;
+      letter-spacing: 1px;
+      text-align: center;
+      margin-bottom: 4px;
+      font-weight: bold;
+    }
+
+    .privacy-item-badge {
+      background: var(--bento-card);
+      border: 1px solid var(--bento-border);
+      padding: 7px 12px;
+      border-radius: 9999px;
+      font-size: 0.82rem;
+      color: var(--bento-text-main);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+
+    .privacy-item-badge:active {
+      background: var(--bento-card-active);
+      border-color: var(--bento-hero);
+      transform: scale(0.97);
+    }
+
+    /* Profile / Clearance Layout (Bento Stat Grid) */
+    .profile-metrics-row {
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+      padding: 12px;
+      background: var(--bento-card);
+      border: 1px solid var(--bento-border);
+      border-radius: 20px;
+    }
+
+    .metric-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .metric-val {
+      font-family: var(--font-title);
+      font-size: 1.4rem;
+      font-weight: 800;
+    }
+
+    .metric-lbl {
+      font-size: 0.68rem;
+      color: var(--bento-text-sub);
+      font-family: var(--font-mono);
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+    }
+
+    .skills-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .skill-item {
+      background: var(--bento-card);
+      border: 1px solid var(--bento-border);
+      border-radius: 18px;
+      padding: 10px 14px;
+    }
+
+    .skill-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.74rem;
+      font-family: var(--font-title);
+      font-weight: 700;
+      color: #FFFFFF;
+      margin-bottom: 6px;
+    }
+
+    .skill-bar {
+      height: 6px;
+      background: var(--bento-bg);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .skill-fill {
+      height: 100%;
+      background: var(--bento-hero);
+      border-radius: 9999px;
+      transition: width 0.4s ease;
+    }
+
+    .achievements-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .achievement-card {
+      background: var(--bento-card);
+      border: 1px solid var(--bento-border);
+      border-radius: 18px;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0.45;
+    }
+
+    .achievement-card.unlocked {
+      opacity: 1;
+      border-color: var(--bento-hero);
+      background: linear-gradient(135deg, rgba(33, 0, 93, 0.6) 0%, rgba(79, 55, 139, 0.6) 100%);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+
+    .achievement-icon { font-size: 1.3rem; }
+    .achievement-info h4 { font-family: var(--font-title); font-size: 0.74rem; color: #fff; }
+    .achievement-info p { font-size: 0.68rem; color: var(--bento-text-sub); }
+
+    /* Schematic Map Grid */
+    .map-nodes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      padding: 4px;
+    }
+
+    .map-node {
+      background: var(--bento-card);
+      border: 1px solid var(--bento-border);
+      border-radius: 20px;
+      padding: 12px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+
+    .map-node.locked {
+      opacity: 0.4;
+    }
+
+    .map-node.available {
+      border-color: var(--bento-hero);
+      box-shadow: 0 4px 16px rgba(208, 188, 255, 0.2);
+    }
+
+    .map-node.completed {
+      border-color: var(--bento-success);
+      background: rgba(74, 222, 128, 0.12);
+    }
+
+    .map-node:active:not(.locked) {
+      transform: scale(0.96);
+      background: var(--bento-card-active);
+    }
+
+    /* Notification Toast (Bento Pill) */
+    #notification-toast {
+      position: fixed;
+      top: env(safe-area-inset-top, 14px);
+      right: env(safe-area-inset-right, 20px);
+      background: var(--bento-card);
+      border: 1px solid var(--bento-hero);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+      padding: 10px 18px;
+      border-radius: 20px;
+      z-index: 120;
+      transform: translateX(160%);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      pointer-events: none;
+      color: var(--bento-text-main);
+    }
+
+    #notification-toast.show {
+      transform: translateX(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- WebGL Three.js Canvas -->
+  <canvas id="webgl-canvas"></canvas>
+  <div class="scanlines"></div>
+
+  <!-- STARTUP CINEMATIC OVERLAY (Landscape Compact) -->
+  <div id="startup-screen">
+    <div class="startup-container">
+      <div class="startup-terminal">
+        <div class="terminal-header">
+          <span>NEXORA DEFENSE MATRIX // PROTOCOL 2026</span>
+          <span id="init-clock">00:00:00</span>
+        </div>
+        <div class="terminal-log" id="startup-log">
+          <div class="log-entry">> INITIALIZING QUANTUM DEFENSE KERNEL...</div>
+        </div>
+        <div style="font-size: 0.72rem; color: #64748b; margin-top: auto;">
+          <span>LANDSCAPE EDITION &bull; HARDWARE ACCELERATED</span>
+        </div>
+      </div>
+      <div class="startup-branding">
+        <h1 class="title-cyber">CYBER QUEST</h1>
+        <p class="title-sub">BECOME A CYBER GUARDIAN</p>
+        <button class="btn-cyber" id="btn-start-game">
+          <span>ENTER FACILITY</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HUD INTERFACE (Landscape Optimized) -->
+  <div id="hud">
+    <div class="hud-top-bar">
+      <!-- Player Dossier Card -->
+      <div class="hud-card player-stats-compact">
+        <div class="avatar-icon">🛡️</div>
+        <div class="stats-info">
+          <div class="guardian-title-row">
+            <span class="guardian-title">CYBER GUARDIAN</span>
+            <span class="guardian-level" id="hud-level">LVL 1</span>
+          </div>
+          <div class="xp-bar-container">
+            <div class="xp-bar-fill" id="hud-xp-fill"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
+            <div class="hearts-row" id="hud-hearts">
+              <span class="heart">❤️</span>
+              <span class="heart">❤️</span>
+              <span class="heart">❤️</span>
+            </div>
+            <span style="font-family:var(--font-mono); font-size:0.68rem; color:var(--neon-cyan); margin-left:8px;" id="hud-xp">0 XP</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="hud-quick-buttons">
+        <button class="hud-icon-btn" id="btn-open-map">🗺️ MAP</button>
+        <button class="hud-icon-btn" id="btn-open-profile">👤 PROFILE</button>
+        <button class="hud-icon-btn" id="btn-open-settings">⚙️ CONFIG</button>
+      </div>
+    </div>
+
+    <!-- Center Reticle -->
+    <div class="crosshair">
+      <div class="crosshair-ring"></div>
+    </div>
+
+    <!-- Bottom Objective Banner -->
+    <div class="hud-bottom-bar">
+      <div class="objective-pill">
+        <div class="objective-dot"></div>
+        <span id="hud-objective">APPROACH MISSION 1: PASSWORD DEFENDER</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOUCH CONTROL LAYER -->
+  <div id="mobile-touch-layer">
+    <!-- Left Virtual Joystick -->
+    <div id="joystick-touch-zone">
+      <div id="joystick-base">
+        <div id="joystick-knob"></div>
+      </div>
+    </div>
+
+    <!-- Right Camera Pan Zone -->
+    <div id="camera-touch-zone"></div>
+
+    <!-- Right Hand Action Buttons -->
+    <div id="mobile-action-buttons">
+      <button class="mobile-sprint-btn" id="btn-mobile-sprint">
+        <span>⚡</span>
+        <span style="font-size:0.6rem;">BOOST</span>
+      </button>
+
+      <button class="mobile-interact-btn" id="btn-mobile-interact">
+        <span>ACCESS</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- HOLOGRAPHIC MISSION MODAL (2-Column Landscape) -->
+  <div class="hologram-overlay" id="mission-modal">
+    <div class="holo-window">
+      <div class="holo-header">
+        <div class="holo-title-group">
+          <span class="holo-tag" id="mission-tag">MISSION 01</span>
+          <h2 class="holo-title" id="mission-title">PASSWORD DEFENDER</h2>
+        </div>
+        <button class="holo-close-btn" id="btn-close-mission">&times;</button>
+      </div>
+
+      <div class="holo-body" id="mission-body">
+        <!-- Injected dynamically in 2-column landscape -->
+      </div>
+
+      <div class="holo-footer">
+        <div id="mission-footer-hint" style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--neon-cyan);">XP REWARD: +50 XP</div>
+        <button class="btn-cyber" style="padding: 9px 24px; font-size: 0.85rem;" id="btn-next-action">SUBMIT EVALUATION</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE / ACHIEVEMENTS MODAL -->
+  <div class="hologram-overlay" id="profile-modal">
+    <div class="holo-window">
+      <div class="holo-header">
+        <div class="holo-title-group">
+          <span class="holo-tag">GUARDIAN DOSSIER</span>
+          <h2 class="holo-title">SECURITY CLEARANCE PROFILE</h2>
+        </div>
+        <button class="holo-close-btn" id="btn-close-profile">&times;</button>
+      </div>
+      <div class="holo-body" style="flex-direction:column; gap:12px;">
+        <div class="terminal-card profile-metrics-row">
+          <div class="metric-item">
+            <div class="metric-val" style="color:var(--neon-cyan);" id="profile-level-val">1</div>
+            <div class="metric-lbl">CLEARANCE LEVEL</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-val" style="color:var(--neon-green);" id="profile-xp-val">0</div>
+            <div class="metric-lbl">TOTAL XP</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-val" style="color:var(--neon-purple);" id="profile-acc-val">100%</div>
+            <div class="metric-lbl">ACCURACY</div>
+          </div>
+          <div class="metric-item">
+            <div class="metric-val" style="color:var(--neon-amber);" id="profile-done-val">0 / 6</div>
+            <div class="metric-lbl">STATIONS SECURED</div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="font-family: var(--font-title); font-size: 0.9rem; color: var(--neon-cyan);">DEFENSE PROFICIENCIES</h3>
+        </div>
+        <div class="skills-grid">
+          <div class="skill-item">
+            <div class="skill-header"><span>PASSWORD INTEGRITY</span><span id="sk-pwd-val">0%</span></div>
+            <div class="skill-bar"><div class="skill-fill" id="sk-pwd-bar" style="width: 0%;"></div></div>
+          </div>
+          <div class="skill-item">
+            <div class="skill-header"><span>PHISHING TRIAGE</span><span id="sk-phi-val">0%</span></div>
+            <div class="skill-bar"><div class="skill-fill" id="sk-phi-bar" style="width: 0%;"></div></div>
+          </div>
+          <div class="skill-item">
+            <div class="skill-header"><span>WEB NAVIGATION PROTOCOLS</span><span id="sk-nav-val">0%</span></div>
+            <div class="skill-bar"><div class="skill-fill" id="sk-nav-bar" style="width: 0%;"></div></div>
+          </div>
+          <div class="skill-item">
+            <div class="skill-header"><span>PRIVACY & ENCRYPTION</span><span id="sk-prv-val">0%</span></div>
+            <div class="skill-bar"><div class="skill-fill" id="sk-prv-bar" style="width: 0%;"></div></div>
+          </div>
+        </div>
+
+        <h3 style="font-family: var(--font-title); font-size: 0.9rem; color: var(--neon-cyan);">BADGES & ACHIEVEMENTS</h3>
+        <div class="achievements-grid" id="achievements-list">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCHEMATIC MAP MODAL -->
+  <div class="hologram-overlay" id="map-modal">
+    <div class="holo-window">
+      <div class="holo-header">
+        <div class="holo-title-group">
+          <span class="holo-tag">FACILITY SCHEMATIC</span>
+          <h2 class="holo-title">TRAINING NETWORK (TELEPORTATION)</h2>
+        </div>
+        <button class="holo-close-btn" id="btn-close-map">&times;</button>
+      </div>
+      <div class="holo-body" style="flex-direction:column; gap:10px;">
+        <div class="mission-desc-box" style="font-size:0.85rem;">
+          ⚡ Tap any unlocked sector node to immediately initiate coordinate teleportation!
+        </div>
+        <div class="map-nodes-grid" id="map-nodes-grid">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="hologram-overlay" id="settings-modal">
+    <div class="holo-window" style="max-width: 580px;">
+      <div class="holo-header">
+        <div class="holo-title-group">
+          <span class="holo-tag">CONFIG</span>
+          <h2 class="holo-title">SYSTEM PREFERENCES</h2>
+        </div>
+        <button class="holo-close-btn" id="btn-close-settings">&times;</button>
+      </div>
+      <div class="holo-body" style="flex-direction:column; gap:10px;">
+        <div class="terminal-card" style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-weight:bold; font-size:0.9rem;">Web Audio Synthesizer</div>
+            <div style="font-size:0.75rem; color:#94a3b8;">Procedural cyber SFX and chimes</div>
+          </div>
+          <input type="checkbox" id="setting-sound" style="width:22px; height:22px; cursor:pointer;" checked />
+        </div>
+        <div class="terminal-card" style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-weight:bold; font-size:0.9rem;">Haptic Vibrations</div>
+            <div style="font-size:0.75rem; color:#94a3b8;">Tactile response on interactions & answers</div>
+          </div>
+          <input type="checkbox" id="setting-haptics" style="width:22px; height:22px; cursor:pointer;" checked />
+        </div>
+        <div class="terminal-card" style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-weight:bold; font-size:0.9rem;">Touch Look Sensitivity</div>
+            <div style="font-size:0.75rem; color:#94a3b8;">Camera rotation speed</div>
+          </div>
+          <input type="range" id="setting-sens" min="5" max="25" value="12" style="width:120px;" />
+        </div>
+        <div class="terminal-card" style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-weight:bold; color:var(--neon-red); font-size:0.9rem;">Reset Progress</div>
+            <div style="font-size:0.75rem; color:#94a3b8;">Clear XP and unlocked nodes</div>
+          </div>
+          <button class="btn-cyber" style="padding:6px 14px; font-size:0.75rem; border-color:var(--neon-red); color:var(--neon-red);" id="btn-reset-data">RESET</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATION TOAST -->
+  <div id="notification-toast">
+    <div style="font-size: 1.4rem;" id="toast-icon">🏆</div>
+    <div>
+      <div style="font-family: var(--font-title); font-size: 0.8rem; color: var(--neon-green);" id="toast-title">ACHIEVEMENT UNLOCKED</div>
+      <div style="font-size: 0.72rem; color: #bae6fd;" id="toast-desc">Password Protector</div>
+    </div>
+  </div>
+
+  <!-- GAME LOGIC SCRIPT -->
+  <script>
+    /* ============================================================
+       1. NATIVE ANDROID BRIDGE & PROCEDURAL SOUND SYNTH
+       ============================================================ */
+    function triggerAndroidHaptic(type) {
+      if (document.getElementById('setting-haptics') && !document.getElementById('setting-haptics').checked) {
+        return;
+      }
+      try {
+        if (window.AndroidBridge && window.AndroidBridge.vibrate) {
+          window.AndroidBridge.vibrate(type);
+        } else if (navigator.vibrate) {
+          if (type === 'click') navigator.vibrate(12);
+          else if (type === 'correct') navigator.vibrate([40, 40, 60]);
+          else if (type === 'wrong') navigator.vibrate([100, 60, 100]);
+          else if (type === 'teleport') navigator.vibrate(35);
+          else if (type === 'levelup') navigator.vibrate([50, 50, 50, 50, 120]);
+        }
+      } catch (e) {}
+    }
+
+    class CyberSoundSynth {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            this.ctx = new AudioContext();
+          }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      play(type) {
+        triggerAndroidHaptic(type);
+        if (!this.enabled || !this.ctx) return;
+
+        try {
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+
+          switch (type) {
+            case 'click':
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(850, now);
+              osc.frequency.exponentialRampToValueAtTime(320, now + 0.04);
+              gain.gain.setValueAtTime(0.2, now);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+              osc.start(now);
+              osc.stop(now + 0.04);
+              break;
+
+            case 'correct':
+              osc.type = 'triangle';
+              osc.frequency.setValueAtTime(523.25, now);
+              osc.frequency.setValueAtTime(659.25, now + 0.07);
+              osc.frequency.setValueAtTime(783.99, now + 0.14);
+              osc.frequency.setValueAtTime(1046.50, now + 0.21);
+              gain.gain.setValueAtTime(0.25, now);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+              osc.start(now);
+              osc.stop(now + 0.45);
+              break;
+
+            case 'wrong':
+              osc.type = 'sawtooth';
+              osc.frequency.setValueAtTime(190, now);
+              osc.frequency.linearRampToValueAtTime(100, now + 0.22);
+              gain.gain.setValueAtTime(0.28, now);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+              osc.start(now);
+              osc.stop(now + 0.22);
+              break;
+
+            case 'levelup':
+              [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                const o = this.ctx.createOscillator();
+                const g = this.ctx.createGain();
+                o.connect(g);
+                g.connect(this.ctx.destination);
+                o.type = 'sine';
+                o.frequency.setValueAtTime(freq, now + (i * 0.06));
+                g.gain.setValueAtTime(0.18, now + (i * 0.06));
+                g.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+                o.start(now + (i * 0.06));
+                o.stop(now + 0.7);
+              });
+              break;
+
+            case 'hologram':
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(320, now);
+              osc.frequency.exponentialRampToValueAtTime(1100, now + 0.12);
+              gain.gain.setValueAtTime(0.18, now);
+              gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+              osc.start(now);
+              osc.stop(now + 0.15);
+              break;
+
+            case 'teleport':
+              osc.type = 'sine';
+              osc.frequency.setValueAtTime(200, now);
+              osc.frequency.exponentialRampToValueAtTime(1600, now + 0.2);
+              osc.frequency.exponentialRampToValueAtTime(400, now + 0.35);
+              gain.gain.setValueAtTime(0.25, now);
+              gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+              osc.start(now);
+              osc.stop(now + 0.35);
+              break;
+          }
+        } catch (e) {}
+      }
+    }
+
+    const sound = new CyberSoundSynth();
+
+    /* ============================================================
+       2. GAME STATE & PROGRESSION
+       ============================================================ */
+    const STORAGE_KEY = 'CYBER_QUEST_SAVE_MOBILE_v1';
+
+    const defaultState = {
+      xp: 0,
+      level: 1,
+      hearts: 3,
+      currentObjective: "EXPLORE FACILITY // PROCEED TO MISSION 1",
+      completedMissions: [],
+      achievements: [],
+      stats: {
+        totalAnswers: 0,
+        correctAnswers: 0,
+        privacyScore: 0
+      }
+    };
+
+    let gameState = { ...defaultState };
+
+    function loadGameState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          gameState = Object.assign({}, defaultState, JSON.parse(saved));
+        }
+      } catch (e) {}
+    }
+
+    function saveGameState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+      } catch (e) {}
+    }
+
+    function addXP(amount) {
+      gameState.xp += amount;
+      const nextLevelThreshold = gameState.level * 100;
+      if (gameState.xp >= nextLevelThreshold) {
+        gameState.level += 1;
+        sound.play('levelup');
+        showToast('🎉 CLEARANCE LEVEL UP!', `Security Clearance Level ${gameState.level} unlocked!`);
+      }
+      saveGameState();
+      updateHUD();
+    }
+
+    function unlockAchievement(id, title, desc, icon = '🛡️') {
+      if (!gameState.achievements.includes(id)) {
+        gameState.achievements.push(id);
+        sound.play('levelup');
+        showToast(title, desc, icon);
+        saveGameState();
+      }
+    }
+
+    function showToast(title, desc, icon = '✨') {
+      const toast = document.getElementById('notification-toast');
+      document.getElementById('toast-icon').textContent = icon;
+      document.getElementById('toast-title').textContent = title;
+      document.getElementById('toast-desc').textContent = desc;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    /* ============================================================
+       3. MISSIONS DATA (6 Comprehensive Cybersecurity Modules)
+       ============================================================ */
+    const MISSIONS_DATA = [
+      {
+        id: 0,
+        name: "PASSWORD DEFENDER",
+        tag: "MISSION 01 // AUTHENTICATION",
+        stationName: "Password Security Terminal",
+        stationPos: { x: -14, z: -8 },
+        objective: "Examine password entropy and identify strong authentication defenses against brute-force attacks.",
+        question: "A threat actor is attempting a dictionary brute-force attack. Which password offers the HIGHEST cryptographic entropy?",
+        options: [
+          { text: "P@ssw0rd2026", correct: false, reason: "Uses predictable leetspeak substitutions (@ for a, 0 for o) cracked in milliseconds." },
+          { text: "BlueTiger", correct: false, reason: "Too short and vulnerable to standard dictionary rainbow tables." },
+          { text: "X7!kP9#vLm2$qR8", correct: true, reason: "Outstanding! 15+ mixed alphanumeric characters with special symbols yields 90+ bits of entropy." },
+          { text: "admin123456", correct: false, reason: "Default credential and top breached password worldwide." }
+        ],
+        hint: "Look for high character length, mixed cases, digits, symbols, and zero dictionary words.",
+        tips: [
+          "Password length is paramount: every character exponentially expands the keyspace.",
+          "Avoid predictable leetspeak like 'P@ssw0rd'.",
+          "Enable Multi-Factor Authentication (MFA) on all sensitive accounts."
+        ],
+        badge: { id: "pwd_master", title: "PASSWORD PROTECTOR", desc: "Mastered high-entropy authentication.", icon: "🔑" }
+      },
+      {
+        id: 1,
+        name: "PHISHING DETECTOR",
+        tag: "MISSION 02 // SOCIAL ENGINEERING",
+        stationName: "Phishing Triage Station",
+        stationPos: { x: -14, z: 8 },
+        objective: "Inspect incoming email headers, lookalike sender domains, and psychological urgency triggers.",
+        question: "Analyze this urgent email:\nFROM: Security-Desk <alert@nex0ra-update.xyz>\nSUBJECT: URGENT: Account Deletion in 10 Min!\nBODY: Click here immediately to verify credentials.\n\nWhat is the definitive indicator of phishing?",
+        options: [
+          { text: "The email arrived during working business hours.", correct: false, reason: "Delivery time is not proof of fraud." },
+          { text: "Manufactured panic ('10 Min') paired with a typosquatted domain (.xyz).", correct: true, reason: "Correct! Scammers use artificial panic and spoofed lookalike domains to bypass reason." },
+          { text: "The subject line contains exclamation points.", correct: false, reason: "Punctuation alone is not the primary forensic evidence compared to spoofed sender domains." }
+        ],
+        hint: "Inspect the sender's actual domain name and note the manufactured panic.",
+        tips: [
+          "Always inspect sender email addresses for zero/O typosquats.",
+          "Legitimate companies never demand immediate password clicks under threat of deletion.",
+          "Never click in-email login links; browse directly to official websites."
+        ],
+        badge: { id: "phish_hunter", title: "PHISHING HUNTER", desc: "Triaged sophisticated social engineering bait.", icon: "🎣" }
+      },
+      {
+        id: 2,
+        name: "SAFE BROWSING & HTTPS",
+        tag: "MISSION 03 // WEB SECURITY",
+        stationName: "Safe Browsing Node",
+        stationPos: { x: 0, z: -16 },
+        objective: "Distinguish between secure TLS encrypted portals and unencrypted or spoofed web addresses.",
+        question: "You need to log into your university / corporate account. Which URL is genuinely safe to enter credentials?",
+        options: [
+          { text: "http://portal.university-login.net/verify", correct: false, reason: "Uses unencrypted HTTP; your password can be captured in plaintext on Wi-Fi." },
+          { text: "https://portal.university.edu/login", correct: true, reason: "Spot on! Uses HTTPS/TLS encryption on the official verified institutional domain (.edu)." },
+          { text: "https://free-portal.university.com.co", correct: false, reason: "Misleading subdomain structure routing to an untrusted third-party host." }
+        ],
+        hint: "Look for HTTPS protocol encryption combined with verified institutional top-level domain.",
+        tips: [
+          "HTTPS encrypts communication between your browser and the server.",
+          "Read domain names from right to left before the first single slash to verify genuine ownership."
+        ],
+        badge: { id: "safe_surfer", title: "SAFE SURFER", desc: "Verified cryptographic web domains.", icon: "🌐" }
+      },
+      {
+        id: 3,
+        name: "PRIVACY VAULT",
+        tag: "MISSION 04 // DATA PROTECTION",
+        stationName: "Privacy Security Vault",
+        stationPos: { x: 14, z: -8 },
+        objective: "Sort confidential tokens into the Secure Private Vault vs Safe Public items.",
+        isInteractiveVault: true,
+        items: [
+          { name: "One-Time Password (OTP)", type: "private" },
+          { name: "Public Gamer Tag", type: "public" },
+          { name: "ATM / Card PIN", type: "private" },
+          { name: "Favorite Food", type: "public" },
+          { name: "Government ID / SSN", type: "private" }
+        ],
+        tips: [
+          "Never disclose OTPs or security PINs to anyone, even bank staff or tech support.",
+          "Keep personally identifiable information (PII) minimal on public platforms."
+        ],
+        badge: { id: "privacy_guard", title: "PRIVACY GUARDIAN", desc: "Protected critical credentials in the cyber vault.", icon: "🛡️" }
+      },
+      {
+        id: 4,
+        name: "SCAM HUNTER",
+        tag: "MISSION 05 // THREAT MITIGATION",
+        stationName: "Scam Detection Terminal",
+        stationPos: { x: 14, z: 8 },
+        objective: "Neutralize direct message cash prize lottery scams and OTP harvesting.",
+        question: "An unknown contact messages:\n'CONGRATULATIONS! You won a $1,000 cash grant! Send your bank OTP code now to deposit the funds.'\n\nWhat is your protocol response?",
+        options: [
+          { text: "Send the OTP quickly before the prize expires.", correct: false, reason: "Critical Error! Giving an OTP gives scammers full permission to drain your funds." },
+          { text: "Ask the sender to send a photo of their ID badge.", correct: false, reason: "Scammers frequently use forged badge images." },
+          { text: "DO NOT SHARE OTP & IMMEDIATELY BLOCK AND REPORT CONTACT.", correct: true, reason: "Excellent! You cannot win contests you never entered, and banks NEVER request OTPs." }
+        ],
+        hint: "Remember: OTP is a private security key. Never send it to anyone.",
+        tips: [
+          "Unsolicited prize notifications demanding codes or fees are always scams.",
+          "Reporting scams shields the broader digital community."
+        ],
+        badge: { id: "scam_hunter", title: "SCAM HUNTER", desc: "Neutralized social engineering financial fraud.", icon: "🎯" }
+      },
+      {
+        id: 5,
+        name: "FINAL CYBER MATRIX",
+        tag: "MISSION 06 // GUARDIAN EVALUATION",
+        stationName: "Final Cyber Challenge Chamber",
+        stationPos: { x: 0, z: 16 },
+        objective: "Demonstrate complete synthesis of all cyber guardian defense vectors.",
+        question: "A simulated coordinated cyber incident is underway. Select the comprehensive defense posture:",
+        options: [
+          { text: "Disable antivirus scanners and click incoming warning popups.", correct: false, reason: "This directly infects core systems with malware." },
+          { text: "Enforce MFA, verify HTTPS domains, isolate OTPs, and quarantine urgent suspicious emails.", correct: true, reason: "OUTSTANDING! You have mastered all core Cyber Guardian principles!" },
+          { text: "Reuse master passwords across all external services for convenience.", correct: false, reason: "Password reuse leads to credential stuffing breaches." }
+        ],
+        hint: "Synthesize all defense protocols learned from the previous stations.",
+        tips: [
+          "Cyber defense is a continuous habit of verification, privacy, and caution.",
+          "You are now ready to safeguard networks as an elite Cyber Guardian!"
+        ],
+        badge: { id: "cyber_master", title: "CYBER GUARDIAN MASTER", desc: "Completed all cybersecurity training protocols!", icon: "👑" }
+      }
+    ];
+
+    const ALL_ACHIEVEMENTS = [
+      { id: "pwd_master", title: "PASSWORD PROTECTOR", desc: "Mastered high-entropy passwords.", icon: "🔑" },
+      { id: "phish_hunter", title: "PHISHING HUNTER", desc: "Defeated social engineering attacks.", icon: "🎣" },
+      { id: "safe_surfer", title: "SAFE SURFER", desc: "Verified encrypted SSL/TLS domains.", icon: "🌐" },
+      { id: "privacy_guard", title: "PRIVACY GUARDIAN", desc: "Protected confidential credentials.", icon: "🛡️" },
+      { id: "scam_hunter", title: "SCAM HUNTER", desc: "Identified and reported fraud bait.", icon: "🎯" },
+      { id: "cyber_master", title: "CYBER GUARDIAN MASTER", desc: "Secured the entire training facility.", icon: "👑" }
+    ];
+
+    /* ============================================================
+       4. THREE.JS 3D ENVIRONMENT ENGINE
+       ============================================================ */
+    let scene, camera, renderer;
+    let stationMeshes = [];
+    let centralHoloGlobe, particleSystem;
+    let clock = new THREE.Clock();
+
+    const player = {
+      pos: new THREE.Vector3(0, 1.7, 0),
+      yaw: 0,
+      pitch: 0,
+      speed: 8.5,
+      runSpeed: 14.5,
+      isSprinting: false
+    };
+
+    let activeStationNear = null;
+    let isModalOpen = false;
+
+    // Movement Vectors from Dual Virtual Analog & Keyboard
+    let moveInput = { x: 0, z: 0 };
+    const keys = { KeyW: false, KeyS: false, KeyA: false, KeyD: false, ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false };
+
+    function init3D() {
+      const canvas = document.getElementById('webgl-canvas');
+      scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0x1C1B1F, 0.026);
+
+      camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 100);
+      camera.position.copy(player.pos);
+
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.25;
+
+      buildEnvironment();
+      setupStationPedestals();
+      setupParticles();
+      setupLighting();
+
+      window.addEventListener('resize', onWindowResize);
+      setupInputControls();
+      animate();
+    }
+
+    function buildEnvironment() {
+      // Hexagonal Arena Floor (Bento Dark Canvas)
+      const floorGeo = new THREE.PlaneGeometry(60, 60, 24, 24);
+      const floorMat = new THREE.MeshStandardMaterial({
+        color: 0x1C1B1F,
+        roughness: 0.35,
+        metalness: 0.6
+      });
+      const floor = new THREE.Mesh(floorGeo, floorMat);
+      floor.rotation.x = -Math.PI / 2;
+      scene.add(floor);
+
+      // Floor Grid Wireframe (Bento Lavender & Dark Purple Grid)
+      const gridHelper = new THREE.GridHelper(60, 40, 0xD0BCFF, 0x332D41);
+      gridHelper.position.y = 0.02;
+      scene.add(gridHelper);
+
+      // Curved Facility Walls (Bento Card Dark)
+      const wallGeo = new THREE.CylinderGeometry(28, 28, 9, 32, 1, true);
+      const wallMat = new THREE.MeshStandardMaterial({
+        color: 0x211F26,
+        roughness: 0.5,
+        metalness: 0.5,
+        side: THREE.BackSide
+      });
+      const walls = new THREE.Mesh(wallGeo, wallMat);
+      walls.position.y = 4.5;
+      scene.add(walls);
+
+      // Neon Rings (Bento Hero & Mid Purple)
+      const ringGeo = new THREE.TorusGeometry(27.8, 0.14, 8, 48);
+      const lowerRing = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: 0xD0BCFF }));
+      lowerRing.rotation.x = Math.PI / 2;
+      lowerRing.position.y = 0.25;
+      scene.add(lowerRing);
+
+      const upperRing = lowerRing.clone();
+      upperRing.position.y = 8.5;
+      upperRing.material = new THREE.MeshBasicMaterial({ color: 0x4F378B });
+      scene.add(upperRing);
+
+      // Server Racks with Blinking Indicator LEDs
+      for (let i = 0; i < 12; i++) {
+        const angle = (i / 12) * Math.PI * 2;
+        const x = Math.sin(angle) * 25.5;
+        const z = Math.cos(angle) * 25.5;
+
+        const rackGroup = new THREE.Group();
+        rackGroup.position.set(x, 0, z);
+        rackGroup.lookAt(0, 0, 0);
+
+        const rackGeo = new THREE.BoxGeometry(2.4, 6, 1.2);
+        const rackMat = new THREE.MeshStandardMaterial({ color: 0x2B2930, roughness: 0.5, metalness: 0.7 });
+        const rackMesh = new THREE.Mesh(rackGeo, rackMat);
+        rackMesh.position.y = 3;
+        rackGroup.add(rackMesh);
+
+        for (let row = 1; row < 5; row++) {
+          const ledGeo = new THREE.BoxGeometry(2.0, 0.08, 0.05);
+          const ledMat = new THREE.MeshBasicMaterial({
+            color: (i + row) % 2 === 0 ? 0x4ADE80 : 0xD0BCFF
+          });
+          const led = new THREE.Mesh(ledGeo, ledMat);
+          led.position.set(0, row * 1.1, 0.61);
+          rackGroup.add(led);
+        }
+
+        scene.add(rackGroup);
+      }
+
+      // Central Command Quantum Core Pedestal
+      const corePedestalGeo = new THREE.CylinderGeometry(3.5, 4.2, 0.8, 24);
+      const corePedestalMat = new THREE.MeshStandardMaterial({ color: 0x2B2930, metalness: 0.8, roughness: 0.3 });
+      const corePedestal = new THREE.Mesh(corePedestalGeo, corePedestalMat);
+      corePedestal.position.y = 0.4;
+      scene.add(corePedestal);
+
+      // Floating Quantum Core Wireframe Sphere
+      const globeGeo = new THREE.SphereGeometry(1.6, 20, 20);
+      centralHoloGlobe = new THREE.Mesh(globeGeo, new THREE.MeshBasicMaterial({
+        color: 0xD0BCFF,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.8
+      }));
+      centralHoloGlobe.position.set(0, 2.8, 0);
+      scene.add(centralHoloGlobe);
+
+      // Orbiting Hologram Ring
+      const orbRing = new THREE.Mesh(
+        new THREE.RingGeometry(2.1, 2.3, 32),
+        new THREE.MeshBasicMaterial({ color: 0x4F378B, side: THREE.DoubleSide, transparent: true, opacity: 0.85 })
+      );
+      orbRing.position.set(0, 2.8, 0);
+      orbRing.name = "orbRing";
+      scene.add(orbRing);
+    }
+
+    function setupStationPedestals() {
+      MISSIONS_DATA.forEach((m) => {
+        const group = new THREE.Group();
+        group.position.set(m.stationPos.x, 0, m.stationPos.z);
+        group.lookAt(0, 0, 0);
+
+        // Desk (Bento Card Style)
+        const desk = new THREE.Mesh(
+          new THREE.BoxGeometry(2.2, 1.1, 1.4),
+          new THREE.MeshStandardMaterial({ color: 0x2B2930, metalness: 0.7, roughness: 0.35 })
+        );
+        desk.position.y = 0.55;
+        group.add(desk);
+
+        // Angled Hologram Display Screen
+        const isCompleted = gameState.completedMissions.includes(m.id);
+        const screenColor = isCompleted ? 0x4ADE80 : 0xD0BCFF;
+
+        const screen = new THREE.Mesh(
+          new THREE.PlaneGeometry(1.8, 1.1),
+          new THREE.MeshBasicMaterial({ color: screenColor, side: THREE.DoubleSide, transparent: true, opacity: 0.85 })
+        );
+        screen.position.set(0, 1.4, -0.2);
+        screen.rotation.x = -0.3;
+        group.add(screen);
+
+        // Station Rotating Badge Octahedron
+        const iconMesh = new THREE.Mesh(
+          new THREE.OctahedronGeometry(0.35),
+          new THREE.MeshBasicMaterial({ color: screenColor, wireframe: true })
+        );
+        iconMesh.position.set(0, 2.4, 0);
+        iconMesh.name = `station_icon_${m.id}`;
+        group.add(iconMesh);
+
+        // Station Point Light
+        const pLight = new THREE.PointLight(screenColor, 1.2, 7);
+        pLight.position.set(0, 2.2, 0);
+        group.add(pLight);
+
+        scene.add(group);
+
+        stationMeshes.push({
+          id: m.id,
+          pos: new THREE.Vector3(m.stationPos.x, 1.7, m.stationPos.z),
+          group: group,
+          icon: iconMesh,
+          screen: screen
+        });
+      });
+    }
+
+    function setupParticles() {
+      const particleCount = 160;
+      const geo = new THREE.BufferGeometry();
+      const positions = new Float32Array(particleCount * 3);
+
+      for (let i = 0; i < particleCount * 3; i += 3) {
+        positions[i] = (Math.random() - 0.5) * 50;
+        positions[i + 1] = Math.random() * 8;
+        positions[i + 2] = (Math.random() - 0.5) * 50;
+      }
+
+      geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      particleSystem = new THREE.Points(geo, new THREE.PointsMaterial({
+        color: 0xD0BCFF,
+        size: 0.12,
+        transparent: true,
+        opacity: 0.6
+      }));
+      scene.add(particleSystem);
+    }
+
+    function setupLighting() {
+      scene.add(new THREE.AmbientLight(0x2B2930, 1.8));
+
+      const coreLight = new THREE.PointLight(0xD0BCFF, 2.2, 25);
+      coreLight.position.set(0, 4, 0);
+      scene.add(coreLight);
+
+      const purpleAccent = new THREE.PointLight(0x4F378B, 1.6, 30);
+      purpleAccent.position.set(0, 7.5, 0);
+      scene.add(purpleAccent);
+    }
+
+    /* ============================================================
+       5. FIRST-CLASS MOBILE TOUCH CONTROLS (Virtual Joystick + Touch Camera)
+       ============================================================ */
+    function setupInputControls() {
+      const joystickZone = document.getElementById('joystick-touch-zone');
+      const joystickBase = document.getElementById('joystick-base');
+      const joystickKnob = document.getElementById('joystick-knob');
+      const cameraZone = document.getElementById('camera-touch-zone');
+      const sprintBtn = document.getElementById('btn-mobile-sprint');
+      const interactBtn = document.getElementById('btn-mobile-interact');
+
+      let joystickTouchId = null;
+      let joystickCenter = { x: 0, y: 0 };
+      const maxDist = 45;
+
+      // Joystick Touch Handlers
+      joystickZone.addEventListener('touchstart', (e) => {
+        if (isModalOpen) return;
+        sound.init();
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          const t = e.changedTouches[i];
+          if (joystickTouchId === null) {
+            joystickTouchId = t.identifier;
+            const rect = joystickBase.getBoundingClientRect();
+            joystickCenter = {
+              x: rect.left + rect.width / 2,
+              y: rect.top + rect.height / 2
+            };
+            joystickBase.classList.add('active');
+            handleJoystickMove(t.clientX, t.clientY);
+            break;
+          }
+        }
+      }, { passive: false });
+
+      joystickZone.addEventListener('touchmove', (e) => {
+        if (isModalOpen || joystickTouchId === null) return;
+        e.preventDefault();
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          const t = e.changedTouches[i];
+          if (t.identifier === joystickTouchId) {
+            handleJoystickMove(t.clientX, t.clientY);
+            break;
+          }
+        }
+      }, { passive: false });
+
+      function endJoystick(e) {
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          if (e.changedTouches[i].identifier === joystickTouchId) {
+            joystickTouchId = null;
+            moveInput.x = 0;
+            moveInput.z = 0;
+            joystickKnob.style.transform = 'translate(0px, 0px)';
+            joystickBase.classList.remove('active');
+            break;
+          }
+        }
+      }
+
+      joystickZone.addEventListener('touchend', endJoystick);
+      joystickZone.addEventListener('touchcancel', endJoystick);
+
+      function handleJoystickMove(clientX, clientY) {
+        let dx = clientX - joystickCenter.x;
+        let dy = clientY - joystickCenter.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist > maxDist) {
+          dx = (dx / dist) * maxDist;
+          dy = (dy / dist) * maxDist;
+        }
+
+        joystickKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+        moveInput.x = dx / maxDist; // Horizontal Strafe (-1 to 1)
+        moveInput.z = dy / maxDist; // Forward / Backward (-1 to 1)
+      }
+
+      // Camera Pan Zone Touch Handlers
+      let cameraTouchId = null;
+      let lastCamX = 0, lastCamY = 0;
+
+      cameraZone.addEventListener('touchstart', (e) => {
+        if (isModalOpen) return;
+        sound.init();
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          const t = e.changedTouches[i];
+          if (cameraTouchId === null) {
+            cameraTouchId = t.identifier;
+            lastCamX = t.clientX;
+            lastCamY = t.clientY;
+            break;
+          }
+        }
+      }, { passive: true });
+
+      cameraZone.addEventListener('touchmove', (e) => {
+        if (isModalOpen || cameraTouchId === null) return;
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          const t = e.changedTouches[i];
+          if (t.identifier === cameraTouchId) {
+            const dx = t.clientX - lastCamX;
+            const dy = t.clientY - lastCamY;
+            lastCamX = t.clientX;
+            lastCamY = t.clientY;
+
+            const sens = (parseInt(document.getElementById('setting-sens').value, 10) || 12) * 0.00035;
+            player.yaw -= dx * sens;
+            player.pitch -= dy * sens;
+            player.pitch = Math.max(-1.1, Math.min(1.1, player.pitch));
+            break;
+          }
+        }
+      }, { passive: true });
+
+      function endCamera(e) {
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          if (e.changedTouches[i].identifier === cameraTouchId) {
+            cameraTouchId = null;
+            break;
+          }
+        }
+      }
+
+      cameraZone.addEventListener('touchend', endCamera);
+      cameraZone.addEventListener('touchcancel', endCamera);
+
+      // Sprint Button Toggle
+      sprintBtn.addEventListener('click', () => {
+        sound.play('click');
+        player.isSprinting = !player.isSprinting;
+        sprintBtn.classList.toggle('active', player.isSprinting);
+      });
+
+      // Terminal Interact Button
+      interactBtn.addEventListener('click', () => {
+        if (activeStationNear !== null && !isModalOpen) {
+          openMissionModal(activeStationNear);
+        }
+      });
+
+      // Fallback Keyboard & Desktop Controls
+      window.addEventListener('keydown', (e) => {
+        if (keys.hasOwnProperty(e.code)) keys[e.code] = true;
+        if (e.code === 'KeyE' && activeStationNear !== null && !isModalOpen) {
+          openMissionModal(activeStationNear);
+        }
+        if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+          player.isSprinting = true;
+          sprintBtn.classList.add('active');
+        }
+        if (e.code === 'Escape') {
+          if (isModalOpen) closeModal();
+          else openSettings();
+        }
+      });
+
+      window.addEventListener('keyup', (e) => {
+        if (keys.hasOwnProperty(e.code)) keys[e.code] = false;
+        if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+          player.isSprinting = false;
+          sprintBtn.classList.remove('active');
+        }
+      });
+    }
+
+    function updatePlayer(dt) {
+      if (isModalOpen) return;
+
+      const currentSpeed = player.isSprinting ? player.runSpeed : player.speed;
+      const moveDir = new THREE.Vector3();
+
+      // Combine Virtual Joystick with Keyboard
+      let kx = 0, kz = 0;
+      if (keys.KeyW || keys.ArrowUp) kz -= 1;
+      if (keys.KeyS || keys.ArrowDown) kz += 1;
+      if (keys.KeyA || keys.ArrowLeft) kx -= 1;
+      if (keys.KeyD || keys.ArrowRight) kx += 1;
+
+      let totalX = moveInput.x + kx;
+      let totalZ = moveInput.z + kz;
+
+      // Clamp magnitude
+      const len = Math.sqrt(totalX * totalX + totalZ * totalZ);
+      if (len > 0.05) {
+        if (len > 1.0) {
+          totalX /= len;
+          totalZ /= len;
+        }
+        moveDir.set(totalX, 0, totalZ);
+        moveDir.applyAxisAngle(new THREE.Vector3(0, 1, 0), player.yaw);
+
+        player.pos.x += moveDir.x * currentSpeed * dt;
+        player.pos.z += moveDir.z * currentSpeed * dt;
+
+        player.pos.y = 1.7 + Math.sin(clock.getElapsedTime() * (player.isSprinting ? 14 : 9)) * 0.035;
+      } else {
+        player.pos.y = 1.7;
+      }
+
+      // Perimeter Boundary Collision (Radius = 25.5)
+      const distFromCenter = Math.sqrt(player.pos.x * player.pos.x + player.pos.z * player.pos.z);
+      if (distFromCenter > 25.5) {
+        const angle = Math.atan2(player.pos.z, player.pos.x);
+        player.pos.x = Math.cos(angle) * 25.5;
+        player.pos.z = Math.sin(angle) * 25.5;
+      }
+
+      // Central Quantum Core Pedestal Collision (Radius = 3.8)
+      if (distFromCenter < 3.8) {
+        const angle = Math.atan2(player.pos.z, player.pos.x);
+        player.pos.x = Math.cos(angle) * 3.8;
+        player.pos.z = Math.sin(angle) * 3.8;
+      }
+
+      // Sync Camera Orientation
+      camera.position.copy(player.pos);
+      const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+      euler.x = player.pitch;
+      euler.y = player.yaw;
+      camera.quaternion.setFromEuler(euler);
+
+      checkStationProximity();
+    }
+
+    function checkStationProximity() {
+      let nearest = null;
+      let nearestDist = 3.8;
+
+      stationMeshes.forEach((st) => {
+        const d = player.pos.distanceTo(st.pos);
+        if (d < nearestDist) {
+          nearestDist = d;
+          nearest = st.id;
+        }
+      });
+
+      const wasNear = activeStationNear;
+      activeStationNear = nearest;
+      const interactBtn = document.getElementById('btn-mobile-interact');
+
+      if (activeStationNear !== null) {
+        const m = MISSIONS_DATA[activeStationNear];
+        const isDone = gameState.completedMissions.includes(m.id);
+        interactBtn.innerHTML = `<span>${m.name}</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+        interactBtn.classList.add('ready');
+
+        if (wasNear === null) {
+          triggerAndroidHaptic('click');
+        }
+      } else {
+        interactBtn.innerHTML = `<span>ACCESS</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+        interactBtn.classList.remove('ready');
+      }
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const dt = Math.min(clock.getDelta(), 0.1);
+      const elapsedTime = clock.getElapsedTime();
+
+      updatePlayer(dt);
+
+      if (centralHoloGlobe) {
+        centralHoloGlobe.rotation.y += 0.4 * dt;
+        centralHoloGlobe.rotation.x += 0.2 * dt;
+      }
+
+      const orbRing = scene.getObjectByName('orbRing');
+      if (orbRing) {
+        orbRing.rotation.z += 0.6 * dt;
+        orbRing.rotation.x = Math.sin(elapsedTime * 0.8) * 0.4;
+      }
+
+      stationMeshes.forEach((st) => {
+        if (st.icon) {
+          st.icon.rotation.y += 1.2 * dt;
+          st.icon.rotation.z += 0.8 * dt;
+          st.icon.position.y = 2.4 + Math.sin(elapsedTime * 2 + st.id) * 0.12;
+        }
+      });
+
+      if (particleSystem) {
+        const positions = particleSystem.geometry.attributes.position.array;
+        for (let i = 1; i < positions.length; i += 3) {
+          positions[i] -= 0.6 * dt;
+          if (positions[i] < 0) positions[i] = 8;
+        }
+        particleSystem.geometry.attributes.position.needsUpdate = true;
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    /* ============================================================
+       6. MISSION INTERFACE & EDUCATIONAL LOGIC (2-Column Landscape)
+       ============================================================ */
+    let currentActiveMission = null;
+    let selectedOptionIndex = null;
+    let currentMissionStage = 'question';
+
+    function openMissionModal(missionId) {
+      currentActiveMission = MISSIONS_DATA[missionId];
+      isModalOpen = true;
+      sound.play('hologram');
+
+      document.getElementById('mission-tag').textContent = currentActiveMission.tag;
+      document.getElementById('mission-title').textContent = currentActiveMission.name;
+
+      renderMissionStage('question');
+      document.getElementById('mission-modal').style.display = 'flex';
+    }
+
+    function renderMissionStage(stage) {
+      currentMissionStage = stage;
+      const body = document.getElementById('mission-body');
+      const footerBtn = document.getElementById('btn-next-action');
+      const m = currentActiveMission;
+
+      if (stage === 'question') {
+        selectedOptionIndex = null;
+        footerBtn.textContent = 'SUBMIT EVALUATION';
+        footerBtn.disabled = true;
+        footerBtn.style.opacity = '0.5';
+
+        if (m.isInteractiveVault) {
+          // Mission 4 Privacy Vault
+          body.innerHTML = `
+            <div class="modal-col-left">
+              <div class="mission-desc-box">${m.objective}</div>
+              <div class="nexora-assistant-card">
+                <div class="nexora-avatar">🤖</div>
+                <div class="nexora-content">
+                  <div class="nexora-name">NEXORA ADVISOR</div>
+                  <span>Tap items in the vault buckets to shift them between PUBLIC and SECURE CONFIDENTIAL storage.</span>
+                </div>
+              </div>
+            </div>
+            <div class="modal-col-right">
+              <div class="terminal-card">
+                <div class="privacy-vault-grid">
+                  <div class="vault-bucket vault-public" id="vault-public-zone">
+                    <div class="vault-bucket-title" style="color:var(--neon-cyan);">PUBLIC / SAFE</div>
+                  </div>
+                  <div class="vault-bucket vault-private" id="vault-private-zone">
+                    <div class="vault-bucket-title" style="color:var(--neon-red);">CONFIDENTIAL VAULT</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          initVaultInteractive(m);
+          footerBtn.disabled = false;
+          footerBtn.style.opacity = '1';
+        } else {
+          // Standard Multiple Choice Question
+          let optionsHTML = '';
+          m.options.forEach((opt, idx) => {
+            optionsHTML += `
+              <button class="option-btn" onclick="selectOption(${idx})" id="opt-btn-${idx}">
+                <span>${opt.text.replace(/\n/g, '<br/>')}</span>
+                <span style="font-family:var(--font-mono); color:var(--neon-cyan); margin-left:8px;">[${String.fromCharCode(65 + idx)}]</span>
+              </button>
+            `;
+          });
+
+          body.innerHTML = `
+            <div class="modal-col-left">
+              <div class="mission-desc-box">${m.objective}</div>
+              <div class="nexora-assistant-card">
+                <div class="nexora-avatar">🤖</div>
+                <div class="nexora-content">
+                  <div class="nexora-name">NEXORA ADVISOR</div>
+                  <div id="nexora-text">Analyze the security indicators carefully.</div>
+                  <button class="hint-trigger-btn" onclick="requestHint()">💡 DECRYPT HINT (-5 XP)</button>
+                </div>
+              </div>
+            </div>
+            <div class="modal-col-right">
+              <div class="terminal-card">
+                <div class="question-prompt-text">${m.question}</div>
+                <div class="interactive-options">${optionsHTML}</div>
+              </div>
+            </div>
+          `;
+        }
+      } else if (stage === 'summary') {
+        footerBtn.textContent = 'COMPLETE & RETURN';
+        footerBtn.disabled = false;
+        footerBtn.style.opacity = '1';
+
+        let tipsHTML = '';
+        m.tips.forEach((tip) => {
+          tipsHTML += `<li style="margin-bottom:6px;">${tip}</li>`;
+        });
+
+        body.innerHTML = `
+          <div class="modal-col-left" style="align-items:center; justify-content:center; text-align:center;">
+            <div style="font-size: 2.8rem; margin-bottom: 6px;">🛡️</div>
+            <h3 style="font-family:var(--font-title); color:var(--neon-green); letter-spacing:1px;">SECURITY CLEARED</h3>
+            <p style="color:#bae6fd; font-size:0.85rem; margin-top:4px;">Node telemetry successfully encrypted.</p>
+          </div>
+          <div class="modal-col-right">
+            <div class="terminal-card">
+              <h4 style="font-family:var(--font-title); color:var(--neon-cyan); font-size:0.85rem; margin-bottom:8px;">GUARDIAN PROTOCOL SUMMARY:</h4>
+              <ul style="padding-left: 18px; color: #e2e8f0; font-size: 0.85rem; line-height: 1.45;">${tipsHTML}</ul>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function selectOption(index) {
+      sound.play('click');
+      selectedOptionIndex = index;
+      const allBtns = document.querySelectorAll('.option-btn');
+      allBtns.forEach((btn, i) => {
+        if (i === index) {
+          btn.classList.add('selected');
+        } else {
+          btn.classList.remove('selected');
+        }
+      });
+      const footerBtn = document.getElementById('btn-next-action');
+      footerBtn.disabled = false;
+      footerBtn.style.opacity = '1';
+    }
+
+    function requestHint() {
+      if (currentActiveMission && currentActiveMission.hint) {
+        sound.play('click');
+        document.getElementById('nexora-text').textContent = currentActiveMission.hint;
+        addXP(-5);
+      }
+    }
+
+    // Interactive Vault State
+    let vaultItemsState = [];
+    function initVaultInteractive(mission) {
+      vaultItemsState = mission.items.map((item, i) => ({ ...item, id: i, currentZone: 'public' }));
+      refreshVaultUI();
+    }
+
+    function toggleVaultItem(itemId) {
+      sound.play('click');
+      const itm = vaultItemsState.find(x => x.id === itemId);
+      if (itm) {
+        itm.currentZone = itm.currentZone === 'public' ? 'private' : 'public';
+        refreshVaultUI();
+      }
+    }
+
+    function refreshVaultUI() {
+      const pubZone = document.getElementById('vault-public-zone');
+      const prvZone = document.getElementById('vault-private-zone');
+      if (!pubZone || !prvZone) return;
+
+      pubZone.innerHTML = '<div class="vault-bucket-title" style="color:var(--neon-cyan);">PUBLIC / SAFE</div>';
+      prvZone.innerHTML = '<div class="vault-bucket-title" style="color:var(--neon-red);">CONFIDENTIAL VAULT</div>';
+
+      vaultItemsState.forEach(itm => {
+        const badge = document.createElement('div');
+        badge.className = 'privacy-item-badge';
+        badge.textContent = itm.name;
+        badge.onclick = () => toggleVaultItem(itm.id);
+        if (itm.currentZone === 'public') pubZone.appendChild(badge);
+        else prvZone.appendChild(badge);
+      });
+    }
+
+    // Modal Footer Action
+    document.getElementById('btn-next-action').addEventListener('click', () => {
+      const m = currentActiveMission;
+      gameState.stats.totalAnswers += 1;
+
+      if (currentMissionStage === 'question') {
+        if (m.isInteractiveVault) {
+          const isAllCorrect = vaultItemsState.every(itm => itm.type === itm.currentZone);
+          if (isAllCorrect) {
+            sound.play('correct');
+            gameState.stats.correctAnswers += 1;
+            gameState.stats.privacyScore = 100;
+            completeMissionSuccess(m);
+          } else {
+            sound.play('wrong');
+            gameState.hearts = Math.max(0, gameState.hearts - 1);
+            updateHUD();
+            showToast('VAULT COMPROMISED', 'Private secrets left exposed in public zone!', '⚠️');
+          }
+        } else {
+          const chosen = m.options[selectedOptionIndex];
+          const btn = document.getElementById(`opt-btn-${selectedOptionIndex}`);
+
+          if (chosen.correct) {
+            sound.play('correct');
+            btn.classList.add('selected-correct');
+            gameState.stats.correctAnswers += 1;
+            setTimeout(() => {
+              completeMissionSuccess(m);
+            }, 600);
+          } else {
+            sound.play('wrong');
+            btn.classList.add('selected-wrong');
+            gameState.hearts = Math.max(0, gameState.hearts - 1);
+            updateHUD();
+            document.getElementById('nexora-text').textContent = chosen.reason;
+            if (gameState.hearts <= 0) {
+              setTimeout(() => {
+                showToast('RESTORING DEFENSE SHIELDS', 'Shield energy replenished.', '❤️');
+                gameState.hearts = 3;
+                updateHUD();
+              }, 1200);
+            }
+          }
+        }
+      } else if (currentMissionStage === 'summary') {
+        closeModal();
+      }
+    });
+
+    function completeMissionSuccess(m) {
+      if (!gameState.completedMissions.includes(m.id)) {
+        gameState.completedMissions.push(m.id);
+        addXP(50);
+        if (m.badge) unlockAchievement(m.badge.id, m.badge.title, m.badge.desc, m.badge.icon);
+        updateStation3DVisual(m.id);
+      }
+      renderMissionStage('summary');
+    }
+
+    function updateStation3DVisual(missionId) {
+      const st = stationMeshes.find(s => s.id === missionId);
+      if (st && st.screen && st.icon) {
+        st.screen.material.color.setHex(0x00ff88);
+        st.icon.material.color.setHex(0x00ff88);
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('mission-modal').style.display = 'none';
+      document.getElementById('profile-modal').style.display = 'none';
+      document.getElementById('map-modal').style.display = 'none';
+      document.getElementById('settings-modal').style.display = 'none';
+      isModalOpen = false;
+    }
+
+    // Export close function for Android Back button integration
+    window.closeAnyOpenModal = function() {
+      if (isModalOpen) {
+        closeModal();
+        return true;
+      }
+      return false;
+    };
+
+    document.getElementById('btn-close-mission').addEventListener('click', closeModal);
+    document.getElementById('btn-close-profile').addEventListener('click', closeModal);
+    document.getElementById('btn-close-map').addEventListener('click', closeModal);
+    document.getElementById('btn-close-settings').addEventListener('click', closeModal);
+
+    /* ============================================================
+       7. HUD, PROFILE, SCHEMATIC MAP & CONFIG MODALS
+       ============================================================ */
+    function updateHUD() {
+      document.getElementById('hud-level').textContent = `LVL ${gameState.level}`;
+      document.getElementById('hud-xp').textContent = `${gameState.xp} XP`;
+
+      const xpPercent = (gameState.xp % 100);
+      document.getElementById('hud-xp-fill').style.width = `${xpPercent}%`;
+
+      const heartsContainer = document.getElementById('hud-hearts');
+      heartsContainer.innerHTML = '';
+      for (let i = 0; i < 3; i++) {
+        const h = document.createElement('span');
+        h.className = `heart ${i >= gameState.hearts ? 'lost' : ''}`;
+        h.textContent = '❤️';
+        heartsContainer.appendChild(h);
+      }
+
+      const nextMission = MISSIONS_DATA.find(m => !gameState.completedMissions.includes(m.id));
+      if (nextMission) {
+        document.getElementById('hud-objective').textContent = `NEXT OBJECTIVE: ${nextMission.name}`;
+      } else {
+        document.getElementById('hud-objective').textContent = `ALL SECTORS SECURED // ELITE CYBER GUARDIAN!`;
+      }
+    }
+
+    // Profile Modal
+    document.getElementById('btn-open-profile').addEventListener('click', () => {
+      sound.play('hologram');
+      isModalOpen = true;
+
+      document.getElementById('profile-level-val').textContent = gameState.level;
+      document.getElementById('profile-xp-val').textContent = gameState.xp;
+
+      const acc = gameState.stats.totalAnswers > 0 
+        ? Math.round((gameState.stats.correctAnswers / gameState.stats.totalAnswers) * 100) 
+        : 100;
+      document.getElementById('profile-acc-val').textContent = `${acc}%`;
+      document.getElementById('profile-done-val').textContent = `${gameState.completedMissions.length} / 6`;
+
+      // Skill Bars
+      const pwdVal = gameState.completedMissions.includes(0) ? 100 : 0;
+      const phishVal = gameState.completedMissions.includes(1) ? 100 : 0;
+      const navVal = gameState.completedMissions.includes(2) ? 100 : 0;
+      const prvVal = gameState.completedMissions.includes(3) ? 100 : 0;
+
+      document.getElementById('sk-pwd-val').textContent = `${pwdVal}%`;
+      document.getElementById('sk-pwd-bar').style.width = `${pwdVal}%`;
+      document.getElementById('sk-phi-val').textContent = `${phishVal}%`;
+      document.getElementById('sk-phi-bar').style.width = `${phishVal}%`;
+      document.getElementById('sk-nav-val').textContent = `${navVal}%`;
+      document.getElementById('sk-nav-bar').style.width = `${navVal}%`;
+      document.getElementById('sk-prv-val').textContent = `${prvVal}%`;
+      document.getElementById('sk-prv-bar').style.width = `${prvVal}%`;
+
+      const achList = document.getElementById('achievements-list');
+      achList.innerHTML = '';
+      ALL_ACHIEVEMENTS.forEach(ach => {
+        const isUnlocked = gameState.achievements.includes(ach.id);
+        achList.innerHTML += `
+          <div class="achievement-card ${isUnlocked ? 'unlocked' : ''}">
+            <div class="achievement-icon">${ach.icon}</div>
+            <div class="achievement-info">
+              <h4>${ach.title}</h4>
+              <p>${isUnlocked ? ach.desc : 'Station Locked'}</p>
+            </div>
+          </div>
+        `;
+      });
+
+      document.getElementById('profile-modal').style.display = 'flex';
+    });
+
+    // Map Teleport Modal
+    document.getElementById('btn-open-map').addEventListener('click', () => {
+      sound.play('hologram');
+      isModalOpen = true;
+
+      const grid = document.getElementById('map-nodes-grid');
+      grid.innerHTML = '';
+
+      MISSIONS_DATA.forEach((m, idx) => {
+        const isDone = gameState.completedMissions.includes(m.id);
+        const isAvailable = idx === 0 || gameState.completedMissions.includes(idx - 1) || isDone;
+
+        let statusClass = 'locked';
+        let statusBadge = '🔒 LOCKED';
+        if (isDone) { statusClass = 'completed'; statusBadge = '✓ SECURED'; }
+        else if (isAvailable) { statusClass = 'available'; statusBadge = '⚡ AVAILABLE'; }
+
+        const card = document.createElement('div');
+        card.className = `map-node ${statusClass}`;
+        card.innerHTML = `
+          <div style="font-family:var(--font-mono); font-size:0.7rem; color:var(--neon-cyan);">NODE ${m.id + 1}</div>
+          <div style="font-family:var(--font-title); font-size:0.85rem; font-weight:bold; margin:3px 0;">${m.name}</div>
+          <div style="font-family:var(--font-mono); font-size:0.7rem; font-weight:bold; color:${isDone ? 'var(--neon-green)' : (isAvailable ? 'var(--neon-cyan)' : '#64748b')}">${statusBadge}</div>
+        `;
+
+        if (isAvailable) {
+          card.onclick = () => {
+            closeModal();
+            player.pos.set(m.stationPos.x * 0.72, 1.7, m.stationPos.z * 0.72);
+            player.yaw = Math.atan2(-m.stationPos.x, -m.stationPos.z);
+            sound.play('teleport');
+            showToast('TELEPORT ENGAGED', `Translocated to ${m.name}`, '⚡');
+          };
+        }
+        grid.appendChild(card);
+      });
+
+      document.getElementById('map-modal').style.display = 'flex';
+    });
+
+    // Settings Modal
+    function openSettings() {
+      sound.play('hologram');
+      isModalOpen = true;
+      document.getElementById('settings-modal').style.display = 'flex';
+    }
+    document.getElementById('btn-open-settings').addEventListener('click', openSettings);
+
+    document.getElementById('setting-sound').addEventListener('change', (e) => {
+      sound.enabled = e.target.checked;
+    });
+
+    document.getElementById('btn-reset-data').addEventListener('click', () => {
+      if (confirm("Reset all Cyber Quest training progress?")) {
+        try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+        gameState = { ...defaultState };
+        updateHUD();
+        closeModal();
+        showToast('DATA PURGED', 'Telemetry reset.', '🔄');
+      }
+    });
+
+    /* ============================================================
+       8. INITIALIZATION & CINEMATIC STARTUP
+       ============================================================ */
+    function runStartupSequence() {
+      const logs = [
+        "NEXORA QUANTUM DEFENSE KERNEL... ACTIVE",
+        "CONNECTING TO NEURAL MATRIX... STABLE",
+        "TRAINING FACILITY TELEMETRY: 6 NODES READY",
+        "SECURITY LEVEL: SECURE // THREAT MONITOR: ON",
+        "GUARDIAN RECRUIT IDENTIFIED. WELCOME."
+      ];
+
+      const logContainer = document.getElementById('startup-log');
+      let index = 0;
+
+      const logInterval = setInterval(() => {
+        if (index < logs.length) {
+          const entry = document.createElement('div');
+          entry.className = 'log-entry log-success';
+          entry.textContent = `> ${logs[index]}`;
+          logContainer.appendChild(entry);
+          logContainer.scrollTop = logContainer.scrollHeight;
+          index++;
+        } else {
+          clearInterval(logInterval);
+        }
+      }, 280);
+
+      setInterval(() => {
+        const d = new Date();
+        const clockElem = document.getElementById('init-clock');
+        if (clockElem) clockElem.textContent = d.toTimeString().split(' ')[0];
+      }, 1000);
+    }
+
+    document.getElementById('btn-start-game').addEventListener('click', () => {
+      sound.init();
+      sound.play('correct');
+      const startup = document.getElementById('startup-screen');
+      startup.style.opacity = '0';
+      setTimeout(() => {
+        startup.style.display = 'none';
+        document.getElementById('hud').style.display = 'block';
+        showToast('TRAINING INITIATED', 'Use left joystick to move, drag right to look around.', '🚀');
+      }, 600);
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadGameState();
+      init3D();
+      updateHUD();
+      runStartupSequence();
+    });
+  </script>
+</body>
+</html>
